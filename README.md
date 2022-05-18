@@ -22,4 +22,4 @@ go build && ./simple-demo
 测试数据写在 demo_data.go 中，用于列表接口的 mock 测试
 
 ## 提交方式 
-自己新建分支如`dev-lyj`，修改完代码会`pull request`到`main`分支
+自己新建分支如`dev-cyc`，修改完代码会`pull request`到`main`分支
