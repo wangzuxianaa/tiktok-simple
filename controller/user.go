@@ -1,9 +1,11 @@
 package controller
 
 import (
+	"github.com/RaymondCode/simple-demo/pkg/token"
+	"github.com/RaymondCode/simple-demo/pkg/utils"
+	"github.com/RaymondCode/simple-demo/repository"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"sync/atomic"
 )
 
 // usersLoginInfo use map to store user info, and key is username+password for demo
@@ -23,7 +25,7 @@ var userIdSequence = int64(1)
 
 type UserLoginResponse struct {
 	Response
-	UserId int64  `json:"user_id,omitempty"`
+	UserId uint   `json:"user_id,omitempty"`
 	Token  string `json:"token"`
 }
 
@@ -36,26 +38,61 @@ func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	token := username + password
-
-	if _, exist := usersLoginInfo[token]; exist {
+	// 查找用户是否存在
+	userLoginInfo, err := repository.FindUserByName(username)
+	if userLoginInfo != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
 		})
-	} else {
-		atomic.AddInt64(&userIdSequence, 1)
-		newUser := User{
-			Id:   userIdSequence,
-			Name: username,
-		}
-		usersLoginInfo[token] = newUser
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0},
-			UserId:   userIdSequence,
-			Token:    username + password,
-		})
+		return
 	}
+	if err != nil {
+		c.JSON(http.StatusOK, UserLoginResponse{
+			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
+		})
+		return
+	}
+
+	pwd := utils.MakeSha1(password)
+	userLoginInfo, err = repository.CreateUser(username, pwd)
+	if err != nil {
+		c.JSON(http.StatusOK, UserLoginResponse{
+			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
+		})
+		return
+	}
+	generateToken, err := token.GenerateToken(userLoginInfo.ID, userLoginInfo.Username)
+	c.JSON(http.StatusOK, UserLoginResponse{
+		Response: Response{StatusCode: 0, StatusMsg: "Success"},
+		UserId:   userLoginInfo.ID,
+		Token:    generateToken,
+	})
 }
+
+//func Register(c *gin.Context) {
+//	username := c.Query("username")
+//	password := c.Query("password")
+//
+//	token := username + password
+//
+//	if _, exist := usersLoginInfo[token]; exist {
+//		c.JSON(http.StatusOK, UserLoginResponse{
+//			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
+//		})
+//	} else {
+//		atomic.AddInt64(&userIdSequence, 1)
+//		newUser := User{
+//			Id:   userIdSequence,
+//			Name: username,
+//		}
+//		usersLoginInfo[token] = newUser
+//		c.JSON(http.StatusOK, UserLoginResponse{
+//			Response: Response{StatusCode: 0},
+//			UserId:   userIdSequence,
+//			Token:    username + password,
+//		})
+//	}
+//}
 
 func Login(c *gin.Context) {
 	username := c.Query("username")
@@ -66,7 +103,7 @@ func Login(c *gin.Context) {
 	if user, exist := usersLoginInfo[token]; exist {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0},
-			UserId:   user.Id,
+			UserId:   uint(user.Id),
 			Token:    token,
 		})
 	} else {
