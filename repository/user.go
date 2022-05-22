@@ -1,10 +1,21 @@
 package repository
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
-func FindUserByName(username string) (*User, error) {
+type User struct {
+	Id            int64  `gorm:"primarykey"`
+	Username      string `gorm:"not null;unique;size:32"`
+	Password      string `gorm:"not null;size:64"`
+	FollowCount   int64  `gorm:"default:0"`
+	FollowerCount int64  `gorm:"default:0"`
+	IsFollow      bool   `gorm:"default:false"`
+}
+
+func (u *User) FindUserByName(username string) (*User, error) {
 	var user User
-	err := db.Where("username = ?", username).First(&user).Error
+	err := db.Debug().Where("username = ?", username).First(&user).Error
 	if err == gorm.ErrRecordNotFound {
 		return nil, nil
 	}
@@ -14,13 +25,24 @@ func FindUserByName(username string) (*User, error) {
 	return &user, nil
 }
 
-func CreateUser(username string, password string) (*User, error) {
-	user := User{
-		Username: username,
-		Password: password,
+func (u *User) FindUserById(Id int64) (*User, error) {
+	var user User
+	err := db.Debug().Where("Id = ?", Id).First(&user).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
 	}
-	err := db.Create(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
 
-	return &user, err
-
+func (u *User) CreateUser(username string, password string) (*User, error) {
+	u.Username = username
+	u.Password = password
+	err := db.Create(u).Error
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
 }
