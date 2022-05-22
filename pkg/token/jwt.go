@@ -8,12 +8,12 @@ import (
 var jwtSecret = []byte("douyin")
 
 type Claims struct {
-	UserId   uint
+	UserId   int64
 	Username string
 	jwt.StandardClaims
 }
 
-func GenerateToken(id uint, name string) (string, error) {
+func GenerateToken(id int64, name string) (string, error) {
 	expireTime := time.Now().Add(7 * 24 * time.Hour)
 	claims := Claims{
 		UserId:   id,
@@ -28,4 +28,17 @@ func GenerateToken(id uint, name string) (string, error) {
 	tokenStr, err := token.SignedString(jwtSecret)
 
 	return tokenStr, err
+}
+
+func ParseToken(tokenStr string) (*Claims, bool) {
+	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return jwtSecret, nil
+	})
+	if err != nil {
+		return nil, false
+	}
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		return claims, true
+	}
+	return nil, false
 }
