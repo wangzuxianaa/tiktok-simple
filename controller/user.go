@@ -6,6 +6,7 @@ import (
 	"github.com/RaymondCode/simple-demo/repository"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // usersLoginInfo use map to store user info, and key is username+password for demo
@@ -121,12 +122,16 @@ func Login(c *gin.Context) {
 }
 
 func UserInfo(c *gin.Context) {
-	//token := c.Query("token")
-	claims := c.MustGet("claims").(*token.Claims)
+	userId := c.Query("user_id")
 	var user repository.User
-	userId := claims.UserId
-
-	userInfo, err := user.FindUserById(userId)
+	userIdInt, err := strconv.ParseInt(userId, 10, 36)
+	if err != nil {
+		c.JSON(http.StatusOK, UserResponse{
+			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
+		})
+		return
+	}
+	userInfo, err := user.FindUserById(userIdInt)
 	if err != nil {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
@@ -135,7 +140,7 @@ func UserInfo(c *gin.Context) {
 	}
 
 	userRes := User{
-		Id:            userId,
+		Id:            userIdInt,
 		Name:          userInfo.Username,
 		FollowCount:   userInfo.FollowCount,
 		FollowerCount: userInfo.FollowerCount,
