@@ -14,6 +14,6 @@ func Init() (err error) {
 		panic("failed to connect database")
 		return err
 	}
-	err = db.AutoMigrate(&User{})
+	err = db.AutoMigrate(&Comment{}, &Video{}, &User{})
 	return err
 }
