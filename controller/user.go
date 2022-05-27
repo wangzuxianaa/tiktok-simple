@@ -44,29 +44,33 @@ func Register(c *gin.Context) {
 	}
 
 	// 查找用户是否存在
-	userLoginInfo, err := user.FindUserByName(username)
-	if userLoginInfo != nil {
+	ok, err := user.FindUserByName()
+	if err != nil {
+		c.JSON(http.StatusOK, UserLoginResponse{
+			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
+		})
+		return
+	}
+	if ok == true {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
 		})
 		return
 	}
-	if err != nil {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
-		})
-		return
-	}
 
 	pwd := utils.MakeSha1(password)
-	userLoginInfo, err = user.CreateUser(username, pwd)
+	user = repository.User{
+		Username: username,
+		Password: pwd,
+	}
+	err = user.CreateUser()
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
 		})
 		return
 	}
-	generateToken, err := token.GenerateToken(userLoginInfo.Id, userLoginInfo.Username)
+	generateToken, err := token.GenerateToken(user.Id, user.Username)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
@@ -75,7 +79,7 @@ func Register(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, UserLoginResponse{
 		Response: Response{StatusCode: 0, StatusMsg: "Success"},
-		UserId:   userLoginInfo.Id,
+		UserId:   user.Id,
 		Token:    generateToken,
 	})
 }
@@ -88,26 +92,27 @@ func Login(c *gin.Context) {
 		Username: username,
 	}
 
-	signInUser, err := user.FindUserByName(username)
+	ok, err := user.FindUserByName()
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
 		})
 		return
 	}
-	if signInUser == nil {
+	if ok == false {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User does not exist"},
 		})
 		return
 	}
-	if signInUser.Password != utils.MakeSha1(password) {
+	if user.Password != utils.MakeSha1(password) {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "Password is not correct"},
 		})
 		return
 	}
-	generateToken, err := token.GenerateToken(signInUser.Id, signInUser.Username)
+	generateToken, err := token.GenerateToken(user.Id, username)
+
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
@@ -116,22 +121,25 @@ func Login(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, UserLoginResponse{
 		Response: Response{StatusCode: 0, StatusMsg: "success"},
-		UserId:   signInUser.Id,
+		UserId:   user.Id,
 		Token:    generateToken,
 	})
 }
 
 func UserInfo(c *gin.Context) {
-	userId := c.Query("user_id")
-	var user repository.User
-	userIdInt, err := strconv.ParseInt(userId, 10, 36)
+	userIdStr := c.Query("user_id")
+
+	userId, err := strconv.ParseInt(userIdStr, 10, 36)
 	if err != nil {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
 		})
 		return
 	}
-	userInfo, err := user.FindUserById(userIdInt)
+	user := repository.User{
+		Id: userId,
+	}
+	err = user.FindUserById()
 	if err != nil {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
@@ -140,11 +148,11 @@ func UserInfo(c *gin.Context) {
 	}
 
 	userRes := User{
-		Id:            userIdInt,
-		Name:          userInfo.Username,
-		FollowCount:   userInfo.FollowCount,
-		FollowerCount: userInfo.FollowerCount,
-		IsFollow:      userInfo.IsFollow,
+		Id:            userId,
+		Name:          user.Username,
+		FollowCount:   0,
+		FollowerCount: 0,
+		IsFollow:      false,
 	}
 
 	c.JSON(http.StatusOK, UserResponse{
