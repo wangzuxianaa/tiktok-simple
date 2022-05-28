@@ -9,6 +9,7 @@ type Video struct {
 	Title       string
 }
 
-func (v *Video) FindCommentListById(videoId int64) {
-	db.Preload("CommentList ")
+func (v *Video) CreateVideo() error {
+	err := db.Debug().Create(v).Error
+	return err
 }

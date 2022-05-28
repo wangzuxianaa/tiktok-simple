@@ -2,9 +2,12 @@ package controller
 
 import (
 	"fmt"
+	"github.com/RaymondCode/simple-demo/pkg/token"
+	"github.com/RaymondCode/simple-demo/repository"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"path/filepath"
+	"strings"
 )
 
 type VideoListResponse struct {
@@ -14,12 +17,17 @@ type VideoListResponse struct {
 
 // Publish check token then save upload file to public directory
 func Publish(c *gin.Context) {
-	token := c.Query("token")
+	//token := c.Query("token")
+	title := c.PostForm("title")
+	fmt.Print(title)
+	claims := c.MustGet("claims").(*token.Claims)
 
-	if _, exist := usersLoginInfo[token]; !exist {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
-		return
-	}
+	fmt.Print(claims.UserId)
+
+	//if _, exist := usersLoginInfo[token]; !exist {
+	//	c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+	//	return
+	//}
 
 	data, err := c.FormFile("data")
 	if err != nil {
@@ -31,10 +39,29 @@ func Publish(c *gin.Context) {
 	}
 
 	filename := filepath.Base(data.Filename)
-	user := usersLoginInfo[token]
-	finalName := fmt.Sprintf("%d_%s", user.Id, filename)
+	fmt.Print(filename)
+	finalName := fmt.Sprintf("%d_%s", claims.UserId, filename)
+	fmt.Print(finalName)
 	saveFile := filepath.Join("./public/", finalName)
 	if err := c.SaveUploadedFile(data, saveFile); err != nil {
+		fmt.Print("b")
+		c.JSON(http.StatusOK, Response{
+			StatusCode: 1,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
+
+	url := "http://192.168.43.254:8080/static"
+	video := repository.Video{
+		Title:   title,
+		UserId:  claims.UserId,
+		PlayUrl: strings.Join([]string{url, finalName}, "/"),
+	}
+
+	err = video.CreateVideo()
+	if err != nil {
+		fmt.Print("a")
 		c.JSON(http.StatusOK, Response{
 			StatusCode: 1,
 			StatusMsg:  err.Error(),
