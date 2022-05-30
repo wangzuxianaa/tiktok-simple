@@ -4,11 +4,18 @@ import (
 	"gorm.io/gorm"
 )
 
+//
+// User
+// @Description: 用户数据表model，VideoList代表的是用户表和视频表的外键约束，是一对多的关系
+//
 type User struct {
-	Id        int64  `gorm:"primarykey"`
-	Username  string `gorm:"not null;size:32;index:idx_name_pwd"`
-	Password  string `gorm:"not null;size:64;index:idx_name_pwd"`
-	VideoList []Video
+	Id            int64  `gorm:"primarykey"`
+	Username      string `gorm:"not null;size:32;index:idx_name_pwd"`
+	Password      string `gorm:"not null;size:64;index:idx_name_pwd"`
+	FollowCount   int64
+	FollowerCount int64
+	IsFollow      bool
+	VideoList     []Video
 }
 
 //

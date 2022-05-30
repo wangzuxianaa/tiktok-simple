@@ -15,20 +15,14 @@ type VideoListResponse struct {
 	VideoList []Video `json:"video_list"`
 }
 
-// Publish check token then save upload file to public directory
+//
+// Publish
+// @Description: 发布视频
+// @param c
+//
 func Publish(c *gin.Context) {
-	//token := c.Query("token")
 	title := c.PostForm("title")
-	fmt.Print(title)
 	claims := c.MustGet("claims").(*token.Claims)
-
-	fmt.Print(claims.UserId)
-
-	//if _, exist := usersLoginInfo[token]; !exist {
-	//	c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
-	//	return
-	//}
-
 	data, err := c.FormFile("data")
 	if err != nil {
 		c.JSON(http.StatusOK, Response{
@@ -39,12 +33,10 @@ func Publish(c *gin.Context) {
 	}
 
 	filename := filepath.Base(data.Filename)
-	fmt.Print(filename)
 	finalName := fmt.Sprintf("%d_%s", claims.UserId, filename)
-	fmt.Print(finalName)
 	saveFile := filepath.Join("./public/", finalName)
+	// 上传文件到指定文件夹
 	if err := c.SaveUploadedFile(data, saveFile); err != nil {
-		fmt.Print("b")
 		c.JSON(http.StatusOK, Response{
 			StatusCode: 1,
 			StatusMsg:  err.Error(),
@@ -52,6 +44,7 @@ func Publish(c *gin.Context) {
 		return
 	}
 
+	// 记住playurl的更新
 	url := "http://192.168.43.254:8080/static"
 	video := repository.Video{
 		Title:   title,
@@ -61,14 +54,12 @@ func Publish(c *gin.Context) {
 
 	err = video.CreateVideo()
 	if err != nil {
-		fmt.Print("a")
 		c.JSON(http.StatusOK, Response{
 			StatusCode: 1,
 			StatusMsg:  err.Error(),
 		})
 		return
 	}
-
 	c.JSON(http.StatusOK, Response{
 		StatusCode: 0,
 		StatusMsg:  finalName + " uploaded successfully",

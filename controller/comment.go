@@ -19,11 +19,14 @@ type CommentActionResponse struct {
 	Comment Comment `json:"comment,omitempty"`
 }
 
-// CommentAction no practical effect, just check if token is valid
+//
+// CommentAction
+// @Description: 评论操作
+// @param c
+//
 func CommentAction(c *gin.Context) {
 	claims := c.MustGet("claims").(*token.Claims)
 	videoIdStr := c.Query("video_id")
-	//userIdStr := c.Query("user_id")
 	actionType := c.Query("action_type")
 
 	videoId, err := strconv.ParseInt(videoIdStr, 10, 36)
@@ -33,13 +36,6 @@ func CommentAction(c *gin.Context) {
 		})
 	}
 
-	//userId, err := strconv.ParseInt(userIdStr, 10, 36)
-	//if err != nil {
-	//	c.JSON(http.StatusOK, CommentActionResponse{
-	//		Response: Response{StatusCode: 1, StatusMsg: err.Error()},
-	//	})
-	//}
-
 	comment := repository.Comment{
 		VideoId:    videoId,
 		UserId:     claims.UserId,
@@ -48,7 +44,18 @@ func CommentAction(c *gin.Context) {
 	if actionType == "1" {
 		commentText := c.Query("comment_text")
 		comment.Content = commentText
+		// 创建评论信息
 		if err := comment.CreateComment(); err != nil {
+			c.JSON(http.StatusOK, CommentActionResponse{
+				Response: Response{StatusCode: 1, StatusMsg: err.Error()},
+			})
+			return
+		}
+		video := repository.Video{
+			Id: videoId,
+		}
+		// 更新视频的评论总数
+		if err := video.UpdateVideoCommentCount(actionType); err != nil {
 			c.JSON(http.StatusOK, CommentActionResponse{
 				Response: Response{StatusCode: 1, StatusMsg: err.Error()},
 			})
@@ -81,8 +88,19 @@ func CommentAction(c *gin.Context) {
 			return
 		}
 		comment.Id = commentId
+		// 删除一条评论信息
 		err = comment.DeleteComment()
 		if err != nil {
+			c.JSON(http.StatusOK, CommentActionResponse{
+				Response: Response{StatusCode: 1, StatusMsg: err.Error()},
+			})
+			return
+		}
+		video := repository.Video{
+			Id: videoId,
+		}
+		// 更新视频的评论总数
+		if err := video.UpdateVideoCommentCount(actionType); err != nil {
 			c.JSON(http.StatusOK, CommentActionResponse{
 				Response: Response{StatusCode: 1, StatusMsg: err.Error()},
 			})
@@ -94,6 +112,11 @@ func CommentAction(c *gin.Context) {
 	}
 }
 
+//
+// CommentList
+// @Description: 评论列表
+// @param c
+//
 func CommentList(c *gin.Context) {
 	videoIdStr := c.Query("video_id")
 
@@ -108,6 +131,7 @@ func CommentList(c *gin.Context) {
 	comment := repository.Comment{
 		VideoId: videoId,
 	}
+	// 根据videoId查找所有的评论
 	commentListRepo, err := comment.FindCommentsByVideoId()
 	if err != nil {
 		c.JSON(http.StatusOK, CommentListResponse{
