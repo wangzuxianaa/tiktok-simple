@@ -35,6 +35,11 @@ type UserResponse struct {
 	User User `json:"user"`
 }
 
+//
+// Register
+// @Description: 注册功能
+// @param c
+//
 func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
@@ -58,11 +63,13 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// 密码加密
 	pwd := utils.MakeSha1(password)
 	user = repository.User{
 		Username: username,
 		Password: pwd,
 	}
+	// 创建一条新的用户记录
 	err = user.CreateUser()
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -70,6 +77,7 @@ func Register(c *gin.Context) {
 		})
 		return
 	}
+	// 生成Token
 	generateToken, err := token.GenerateToken(user.Id, user.Username)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -84,6 +92,11 @@ func Register(c *gin.Context) {
 	})
 }
 
+//
+// Login
+// @Description: 登陆功能
+// @param c
+//
 func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
@@ -126,6 +139,11 @@ func Login(c *gin.Context) {
 	})
 }
 
+//
+// UserInfo
+// @Description: 用户信息
+// @param c
+//
 func UserInfo(c *gin.Context) {
 	userIdStr := c.Query("user_id")
 
@@ -139,6 +157,7 @@ func UserInfo(c *gin.Context) {
 	user := repository.User{
 		Id: userId,
 	}
+	// 查找用户信息
 	err = user.FindUserById()
 	if err != nil {
 		c.JSON(http.StatusOK, UserResponse{

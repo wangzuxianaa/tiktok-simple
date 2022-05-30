@@ -21,9 +21,8 @@ func initRouter(r *gin.Engine) {
 		// basic apis
 		apiRouter.GET("/user/", controller.UserInfo)
 
-		apiRouter.POST("/publish/action/", controller.Publish)
 		apiRouter.GET("/publish/list/", controller.PublishList)
-
+		apiRouter.POST("/publish/action/", controller.Publish)
 		// extra apis - I
 		apiRouter.POST("/favorite/action/", controller.FavoriteAction)
 		apiRouter.GET("/favorite/list/", controller.FavoriteList)
