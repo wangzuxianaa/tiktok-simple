@@ -11,12 +11,12 @@ import (
 
 type CommentListResponse struct {
 	Response
-	CommentList []Comment `json:"comment_list,omitempty"`
+	CommentList []CommentMessage `json:"comment_list,omitempty"`
 }
 
 type CommentActionResponse struct {
 	Response
-	Comment Comment `json:"comment,omitempty"`
+	Comment CommentMessage `json:"comment,omitempty"`
 }
 
 //
@@ -64,9 +64,9 @@ func CommentAction(c *gin.Context) {
 
 		c.JSON(http.StatusOK, CommentActionResponse{
 			Response: Response{StatusCode: 0, StatusMsg: "Success"},
-			Comment: Comment{
+			Comment: CommentMessage{
 				Id: comment.Id,
-				User: User{
+				User: UserMessage{
 					Id:            claims.UserId,
 					Name:          claims.Username,
 					FollowCount:   0,
@@ -128,36 +128,36 @@ func CommentList(c *gin.Context) {
 		return
 	}
 
-	comment := repository.Comment{
+	commentRepo := repository.Comment{
 		VideoId: videoId,
 	}
 	// 根据videoId查找所有的评论
-	commentListRepo, err := comment.FindCommentsByVideoId()
+	comments, err := commentRepo.FindCommentsByVideoId()
 	if err != nil {
 		c.JSON(http.StatusOK, CommentListResponse{
 			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
 		})
 		return
 	}
-	var comments []Comment
+	var commentList []CommentMessage
 
-	for _, commentRepo := range commentListRepo {
-		comment := Comment{
-			Id: commentRepo.Id,
-			User: User{
-				Id:            commentRepo.UserId,
-				Name:          commentRepo.User.Username,
-				FollowCount:   0,
-				FollowerCount: 0,
-				IsFollow:      false,
+	for _, comment := range comments {
+		commentMessage := CommentMessage{
+			Id: comment.Id,
+			User: UserMessage{
+				Id:            comment.UserId,
+				Name:          comment.User.Username,
+				FollowCount:   comment.User.FollowCount,
+				FollowerCount: comment.User.FollowerCount,
+				IsFollow:      comment.User.IsFollow,
 			},
-			Content:    commentRepo.Content,
-			CreateDate: commentRepo.CreateDate,
+			Content:    comment.Content,
+			CreateDate: comment.CreateDate,
 		}
-		comments = append(comments, comment)
+		commentList = append(commentList, commentMessage)
 	}
 	c.JSON(http.StatusOK, CommentListResponse{
 		Response:    Response{StatusCode: 0, StatusMsg: "success"},
-		CommentList: comments,
+		CommentList: commentList,
 	})
 }

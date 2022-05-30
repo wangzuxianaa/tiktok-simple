@@ -4,7 +4,7 @@ import "github.com/RaymondCode/simple-demo/repository"
 
 var video repository.Video
 
-var DemoVideos = []Video{
+var DemoVideos = []VideoMessage{
 	{
 		Id:            5,
 		Author:        DemoUser,
@@ -16,7 +16,7 @@ var DemoVideos = []Video{
 	},
 }
 
-var DemoComments = []Comment{
+var DemoComments = []CommentMessage{
 	{
 		Id:         1,
 		User:       DemoUser,
@@ -25,7 +25,7 @@ var DemoComments = []Comment{
 	},
 }
 
-var DemoUser = User{
+var DemoUser = UserMessage{
 	Id:            7,
 	Name:          "TestUser",
 	FollowCount:   0,

@@ -44,7 +44,7 @@ func (u *User) FindUserByName() (bool, error) {
 // @return error
 //
 func (u *User) FindUserById() error {
-	tx := db.Debug().Where("Id = ?", u.Id).First(u)
+	tx := db.Debug().Find(u)
 	err := tx.Error
 	if err == gorm.ErrRecordNotFound {
 		return nil
@@ -63,6 +63,15 @@ func (u *User) FindUserById() error {
 //
 func (u *User) CreateUser() error {
 	err := db.Create(u).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *User) FindVideosByUserId() error {
+	tx := db.Debug().Preload("VideoList").Find(u)
+	err := tx.Error
 	if err != nil {
 		return err
 	}

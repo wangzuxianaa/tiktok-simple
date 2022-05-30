@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 //
 // Video
-// @Description: 视频数据表model，视频表与评论表构建外键约束
+// @Description: 视频数据表model，视频表与评论表构建外键约束，是one to many的关系，一条视频有许多评论信息。
 //
 type Video struct {
 	Id             int64 `gorm:"primarykey"`
