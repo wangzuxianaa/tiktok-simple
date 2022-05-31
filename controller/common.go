@@ -22,6 +22,17 @@ type Comment struct {
 	CreateDate string `json:"create_date,omitempty"`
 }
 
+type Favorite struct {
+	Id            int64 `gorm:"primarykey"` //视频id 唯一标识
+	PlayUrl       string
+	CoverUrl      string
+	FavoriteCount int64
+	CommentCount  int64
+	IsFavorite    bool
+	Title         string
+	User          User
+}
+
 type User struct {
 	Id            int64  `json:"id,omitempty"`
 	Name          string `json:"name,omitempty"`
