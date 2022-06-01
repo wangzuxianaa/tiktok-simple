@@ -12,7 +12,7 @@ import (
 // usersLoginInfo use map to store user info, and key is username+password for demo
 // user data will be cleared every time the server starts
 // test data: username=zhanglei, password=douyin
-var usersLoginInfo = map[string]User{
+var usersLoginInfo = map[string]UserMessage{
 	"zhangleidouyin": {
 		Id:            1,
 		Name:          "zhanglei",
@@ -32,7 +32,7 @@ type UserLoginResponse struct {
 
 type UserResponse struct {
 	Response
-	User User `json:"user"`
+	User UserMessage `json:"user"`
 }
 
 //
@@ -166,7 +166,7 @@ func UserInfo(c *gin.Context) {
 		return
 	}
 
-	userRes := User{
+	userRes := UserMessage{
 		Id:            userId,
 		Name:          user.Username,
 		FollowCount:   0,
