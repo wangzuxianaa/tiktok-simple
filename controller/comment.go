@@ -9,11 +9,19 @@ import (
 	"time"
 )
 
+//
+// CommentListResponse
+// @Description: 评论列表的响应
+//
 type CommentListResponse struct {
 	Response
 	CommentList []CommentMessage `json:"comment_list,omitempty"`
 }
 
+//
+// CommentActionResponse
+// @Description: 评论操作的响应
+//
 type CommentActionResponse struct {
 	Response
 	Comment CommentMessage `json:"comment,omitempty"`
@@ -25,10 +33,12 @@ type CommentActionResponse struct {
 // @param c
 //
 func CommentAction(c *gin.Context) {
+	// 获取claims，里面包含用户id和用户名
 	claims := c.MustGet("claims").(*token.Claims)
 	videoIdStr := c.Query("video_id")
 	actionType := c.Query("action_type")
 
+	// videoId string 转 int
 	videoId, err := strconv.ParseInt(videoIdStr, 10, 36)
 	if err != nil {
 		c.JSON(http.StatusOK, CommentActionResponse{
@@ -37,11 +47,14 @@ func CommentAction(c *gin.Context) {
 	}
 
 	comment := repository.Comment{
-		VideoId:    videoId,
-		UserId:     claims.UserId,
+		VideoId: videoId,
+		UserId:  claims.UserId,
+		// 用户创建评论的时间
 		CreateDate: time.Now().Format("2006-01-02 15:04:05"),
 	}
+	// 创建评论
 	if actionType == "1" {
+		// 获取评论的内容
 		commentText := c.Query("comment_text")
 		comment.Content = commentText
 		// 创建评论信息
@@ -77,7 +90,7 @@ func CommentAction(c *gin.Context) {
 				CreateDate: comment.CreateDate,
 			},
 		})
-	} else if actionType == "2" {
+	} else if actionType == "2" { // 删除评论
 		commentIdStr := c.Query("comment_id")
 
 		commentId, err := strconv.ParseInt(commentIdStr, 10, 36)
@@ -141,6 +154,7 @@ func CommentList(c *gin.Context) {
 	}
 	var commentList []CommentMessage
 
+	// 将通过数据库中得到的comments加入到commentList中
 	for _, comment := range comments {
 		commentMessage := CommentMessage{
 			Id: comment.Id,

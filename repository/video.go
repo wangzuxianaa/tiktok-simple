@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 //
 // Video
-// @Description: 视频数据表model，视频表与评论表构建外键约束，是one to many的关系，一条视频有许多评论信息。
+// @Description: 视频数据表model，视频表与评论表构建外键约束，是one to many的关联模式，一条视频有许多评论信息。
 //
 type Video struct {
 	Id             int64 `gorm:"primarykey"`
@@ -31,7 +31,7 @@ func (v *Video) CreateVideo() error {
 
 //
 // UpdateVideoCommentCount
-// @Description: 根据flag来更新评论总数，创建新的评论就加一，删除评论就减一
+// @Description: 根据flag来更新评论总数，flag为1创建新的评论就加一，flag为2删除评论就减一
 // @receiver v
 // @param flag
 // @return error

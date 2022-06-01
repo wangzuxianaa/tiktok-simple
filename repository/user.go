@@ -70,7 +70,9 @@ func (u *User) CreateUser() error {
 }
 
 func (u *User) FindVideosByUserId() error {
-	tx := db.Debug().Preload("VideoList").Find(u)
+	tx := db.Debug().Preload("VideoList", func(db *gorm.DB) *gorm.DB {
+		return db.Order("videos.id desc")
+	}).Find(u)
 	err := tx.Error
 	if err != nil {
 		return err

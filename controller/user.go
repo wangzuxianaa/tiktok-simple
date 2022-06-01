@@ -22,14 +22,20 @@ var usersLoginInfo = map[string]UserMessage{
 	},
 }
 
-//var userIdSequence = int64(1)
-
+//
+// UserLoginResponse
+// @Description: 用户登陆响应
+//
 type UserLoginResponse struct {
 	Response
 	UserId int64  `json:"user_id,omitempty"`
 	Token  string `json:"token"`
 }
 
+//
+// UserResponse
+// @Description: 用户信息的响应
+//
 type UserResponse struct {
 	Response
 	User UserMessage `json:"user"`
@@ -56,6 +62,7 @@ func Register(c *gin.Context) {
 		})
 		return
 	}
+	// 如果用户存在
 	if ok == true {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
@@ -105,6 +112,7 @@ func Login(c *gin.Context) {
 		Username: username,
 	}
 
+	// 查找用户是否存在
 	ok, err := user.FindUserByName()
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -112,20 +120,23 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
+	// 用户不存在
 	if ok == false {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User does not exist"},
 		})
 		return
 	}
+	// 密码校验
 	if user.Password != utils.MakeSha1(password) {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "Password is not correct"},
 		})
 		return
 	}
-	generateToken, err := token.GenerateToken(user.Id, username)
 
+	// 生成token
+	generateToken, err := token.GenerateToken(user.Id, username)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
@@ -147,6 +158,7 @@ func Login(c *gin.Context) {
 func UserInfo(c *gin.Context) {
 	userIdStr := c.Query("user_id")
 
+	// string 转 int
 	userId, err := strconv.ParseInt(userIdStr, 10, 36)
 	if err != nil {
 		c.JSON(http.StatusOK, UserResponse{
@@ -169,9 +181,9 @@ func UserInfo(c *gin.Context) {
 	userRes := UserMessage{
 		Id:            userId,
 		Name:          user.Username,
-		FollowCount:   0,
-		FollowerCount: 0,
-		IsFollow:      false,
+		FollowCount:   user.FollowCount,
+		FollowerCount: user.FollowerCount,
+		IsFollow:      user.IsFollow,
 	}
 
 	c.JSON(http.StatusOK, UserResponse{
