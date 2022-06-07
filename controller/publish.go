@@ -2,17 +2,19 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
+	"path/filepath"
+	"strconv"
+	"strings"
+
 	"github.com/RaymondCode/simple-demo/pkg/token"
 	"github.com/RaymondCode/simple-demo/repository"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"path/filepath"
-	"strings"
 )
 
 type VideoListResponse struct {
 	Response
-	VideoList []Video `json:"video_list"`
+	VideoList []VideoMessage `json:"video_list,omitempty"`
 }
 
 //
@@ -68,10 +70,53 @@ func Publish(c *gin.Context) {
 
 // PublishList all users have same publish video list
 func PublishList(c *gin.Context) {
+	userIdStr := c.Query("user_id")
+
+	userId, err := strconv.ParseInt(userIdStr, 10, 36)
+	if err != nil {
+		c.JSON(http.StatusOK, VideoListResponse{
+			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
+		})
+		return
+	}
+
+	videoRepo := repository.Video{
+		UserId: userId,
+	}
+	//根据UserId查找所有的视频
+	videos, err := videoRepo.FindVideosByUserId()
+	if err != nil {
+		c.JSON(http.StatusOK, VideoListResponse{
+			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
+		})
+		return
+	}
+	var videoList []VideoMessage
+
+	for _, video := range videos {
+		videoMessage := VideoMessage{
+			Id: video.Id,
+			Author: UserMessage{
+				Id:            video.UserId,
+				Name:          video.Author.Username,
+				FollowCount:   video.Author.FollowCount,
+				FollowerCount: video.Author.FollowerCount,
+				IsFollow:      video.Author.IsFollow,
+			},
+			PlayUrl:       video.PlayUrl,
+			CoverUrl:      video.CoverUrl,
+			FavoriteCount: video.FavouriteCount,
+			CommentCount:  video.CommentCount,
+			IsFavorite:    video.IsFavourite,
+			Title:         video.Title,
+		}
+		videoList = append(videoList, videoMessage)
+	}
 	c.JSON(http.StatusOK, VideoListResponse{
 		Response: Response{
 			StatusCode: 0,
+			StatusMsg:  "success",
 		},
-		VideoList: DemoVideos,
+		VideoList: videoList,
 	})
 }
