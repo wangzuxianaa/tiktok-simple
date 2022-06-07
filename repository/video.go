@@ -16,6 +16,7 @@ type Video struct {
 	CommentCount   int64
 	IsFavourite    bool
 	Title          string
+	Author         User
 }
 
 //
@@ -49,4 +50,21 @@ func (v *Video) UpdateVideoCommentCount(flag string) error {
 		}
 	}
 	return nil
+}
+
+//
+// FindVideosByUserId
+// @Description: 根据UserId查找视频信息
+// @receiver v
+// @return []*Video
+// @return error
+//
+func (v *Video) FindVideosByUserId() ([]*Video, error) {
+	var videos []*Video
+	tx := db.Debug().Where("user_id = ?", v.UserId).Order("create_date desc").Find(&videos)
+	err := tx.Error
+	if err != nil {
+		return nil, err
+	}
+	return videos, nil
 }
