@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/RaymondCode/simple-demo/controller"
 	"github.com/RaymondCode/simple-demo/pkg/token"
+	"github.com/RaymondCode/simple-demo/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -15,7 +15,7 @@ func TokenChecker() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var tokenStruct Token
 		if err := c.ShouldBind(&tokenStruct); err != nil {
-			c.JSON(http.StatusOK, controller.Response{
+			c.JSON(http.StatusOK, service.Response{
 				StatusCode: 1,
 				StatusMsg:  "error",
 			})
@@ -23,7 +23,7 @@ func TokenChecker() gin.HandlerFunc {
 
 		tokenStr := tokenStruct.Token
 		if tokenStr == "" {
-			c.JSON(http.StatusOK, controller.Response{
+			c.JSON(http.StatusOK, service.Response{
 				StatusCode: 1,
 				StatusMsg:  "Token is not found",
 			})
@@ -32,7 +32,7 @@ func TokenChecker() gin.HandlerFunc {
 		}
 		claims, flag := token.ParseToken(tokenStr)
 		if flag == false {
-			c.JSON(http.StatusOK, controller.Response{
+			c.JSON(http.StatusOK, service.Response{
 				StatusCode: 1,
 				StatusMsg:  "Token is not valid",
 			})

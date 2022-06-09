@@ -1,33 +1,18 @@
 package controller
 
 import (
-	"github.com/RaymondCode/simple-demo/pkg/token"
-	"github.com/RaymondCode/simple-demo/pkg/utils"
-	"github.com/RaymondCode/simple-demo/repository"
+	"github.com/RaymondCode/simple-demo/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 )
-
-// usersLoginInfo use map to store user info, and key is username+password for demo
-// user data will be cleared every time the server starts
-// test data: username=zhanglei, password=douyin
-var usersLoginInfo = map[string]UserMessage{
-	"zhangleidouyin": {
-		Id:            1,
-		Name:          "zhanglei",
-		FollowCount:   10,
-		FollowerCount: 5,
-		IsFollow:      true,
-	},
-}
 
 //
 // UserLoginResponse
 // @Description: 用户登陆响应
 //
 type UserLoginResponse struct {
-	Response
+	service.Response
 	UserId int64  `json:"user_id,omitempty"`
 	Token  string `json:"token"`
 }
@@ -37,8 +22,8 @@ type UserLoginResponse struct {
 // @Description: 用户信息的响应
 //
 type UserResponse struct {
-	Response
-	User UserMessage `json:"user"`
+	service.Response
+	User service.UserMessage `json:"user"`
 }
 
 //
@@ -50,51 +35,20 @@ func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	user := repository.User{
-		Username: username,
-	}
-
-	// 查找用户是否存在
-	ok, err := user.FindUserByName()
+	// 注册
+	userId, generateToken, err := service.Register(username, password)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
-		})
-		return
-	}
-	// 如果用户存在
-	if ok == true {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
-		})
-		return
-	}
-
-	// 密码加密
-	pwd := utils.MakeSha1(password)
-	user = repository.User{
-		Username: username,
-		Password: pwd,
-	}
-	// 创建一条新的用户记录
-	err = user.CreateUser()
-	if err != nil {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
-		})
-		return
-	}
-	// 生成Token
-	generateToken, err := token.GenerateToken(user.Id, user.Username)
-	if err != nil {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
+			Response: service.Response{
+				StatusCode: 1,
+				StatusMsg:  err.Error(),
+			},
 		})
 		return
 	}
 	c.JSON(http.StatusOK, UserLoginResponse{
-		Response: Response{StatusCode: 0, StatusMsg: "Success"},
-		UserId:   user.Id,
+		Response: service.Response{StatusCode: 0, StatusMsg: "Success"},
+		UserId:   userId,
 		Token:    generateToken,
 	})
 }
@@ -108,44 +62,20 @@ func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	user := repository.User{
-		Username: username,
-	}
-
-	// 查找用户是否存在
-	ok, err := user.FindUserByName()
+	// 登陆
+	userId, generateToken, err := service.Login(username, password)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
-		})
-		return
-	}
-	// 用户不存在
-	if ok == false {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User does not exist"},
-		})
-		return
-	}
-	// 密码校验
-	if user.Password != utils.MakeSha1(password) {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "Password is not correct"},
-		})
-		return
-	}
-
-	// 生成token
-	generateToken, err := token.GenerateToken(user.Id, username)
-	if err != nil {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
+			Response: service.Response{
+				StatusCode: 1,
+				StatusMsg:  err.Error(),
+			},
 		})
 		return
 	}
 	c.JSON(http.StatusOK, UserLoginResponse{
-		Response: Response{StatusCode: 0, StatusMsg: "success"},
-		UserId:   user.Id,
+		Response: service.Response{StatusCode: 0, StatusMsg: "success"},
+		UserId:   userId,
 		Token:    generateToken,
 	})
 }
@@ -158,36 +88,30 @@ func Login(c *gin.Context) {
 func UserInfo(c *gin.Context) {
 	userIdStr := c.Query("user_id")
 
-	// string 转 int
-	userId, err := strconv.ParseInt(userIdStr, 10, 36)
+	var err error
+	var userId int64
+	userId, err = strconv.ParseInt(userIdStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
-		})
-		return
-	}
-	user := repository.User{
-		Id: userId,
-	}
-	// 查找用户信息
-	err = user.FindUserById()
-	if err != nil {
-		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
+			Response: service.Response{StatusCode: 1, StatusMsg: err.Error()},
 		})
 		return
 	}
 
-	userRes := UserMessage{
-		Id:            userId,
-		Name:          user.Username,
-		FollowCount:   user.FollowCount,
-		FollowerCount: user.FollowerCount,
-		IsFollow:      user.IsFollow,
+	var userRes *service.UserMessage
+	// 获取用户信息
+	userRes, err = service.GetUserInfo(userId)
+	if err != nil {
+		c.JSON(http.StatusOK, UserLoginResponse{
+			Response: service.Response{
+				StatusCode: 1,
+				StatusMsg:  err.Error(),
+			},
+		})
 	}
 
 	c.JSON(http.StatusOK, UserResponse{
-		Response: Response{StatusCode: 0, StatusMsg: "success"},
-		User:     userRes,
+		Response: service.Response{StatusCode: 0, StatusMsg: "success"},
+		User:     *userRes,
 	})
 }

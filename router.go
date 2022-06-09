@@ -8,7 +8,8 @@ import (
 
 func initRouter(r *gin.Engine) {
 	// public directory is used to serve static resources
-	r.Static("/static", "./public")
+	r.Static("/static/video", "./public/video")
+	r.Static("/static/cover", "./public/cover")
 
 	apiRouter := r.Group("/douyin")
 
@@ -18,18 +19,15 @@ func initRouter(r *gin.Engine) {
 
 	apiRouter.Use(middleware.TokenChecker())
 	{
-		// basic apis
 		apiRouter.GET("/user/", controller.UserInfo)
-
 		apiRouter.GET("/publish/list/", controller.PublishList)
 		apiRouter.POST("/publish/action/", controller.Publish)
-		// extra apis - I
-		apiRouter.POST("/favorite/action/", controller.FavoriteAction)
-		apiRouter.GET("/favorite/list/", controller.FavoriteList)
+
+		apiRouter.POST("/favorite/action/", controller.FavouriteAction)
+		apiRouter.GET("/favorite/list/", controller.FavouriteList)
 		apiRouter.POST("/comment/action/", controller.CommentAction)
 		apiRouter.GET("/comment/list/", controller.CommentList)
 
-		// extra apis - II
 		apiRouter.POST("/relation/action/", controller.RelationAction)
 		apiRouter.GET("/relation/follow/list/", controller.FollowList)
 		apiRouter.GET("/relation/follower/list/", controller.FollowerList)

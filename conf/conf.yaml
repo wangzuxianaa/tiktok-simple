@@ -1,0 +1,16 @@
+# mysql数据库的配置
+mysqlConfig:
+  user: root
+  password: root
+  host: 127.0.0.1
+  port: 3306
+  name: tiktok_simple
+# redis数据库的配置
+redisConfig:
+  addr: 127.0.0.1:6379
+  password:
+  db: 0
+# 视频保存的地址，192.168.2.10根据自己的ip地址进行修改
+videoAddr: http://192.168.2.10:8080/static/video
+# 封面保存的地址，192.168.2.10根据自己的ip地址进行修改
+coverAddr: http://192.168.2.10:8080/static/cover

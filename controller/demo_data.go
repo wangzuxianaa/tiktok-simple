@@ -1,22 +1,22 @@
 package controller
 
-import "github.com/RaymondCode/simple-demo/repository"
+import (
+	"github.com/RaymondCode/simple-demo/service"
+)
 
-var video repository.Video
-
-var DemoVideos = []VideoMessage{
+var DemoVideos = []service.VideoMessage{
 	{
-		Id:            5,
+		Id:            1,
 		Author:        DemoUser,
-		PlayUrl:       "http://192.168.1.4:8080/static/6_VIDEO_20220528_075158453.mp4",
-		CoverUrl:      "",
+		PlayUrl:       "http://192.168.2.10:8080/static/video/1_8224B832E4BFB4F0DBC26BFE978DA600.mp4",
+		CoverUrl:      "http://192.168.2.10:8080/static/cover/1_dasdas.jpeg",
 		FavoriteCount: 0,
 		CommentCount:  0,
 		IsFavorite:    false,
 	},
 }
 
-var DemoComments = []CommentMessage{
+var DemoComments = []service.CommentMessage{
 	{
 		Id:         1,
 		User:       DemoUser,
@@ -25,9 +25,9 @@ var DemoComments = []CommentMessage{
 	},
 }
 
-var DemoUser = UserMessage{
-	Id:            7,
-	Name:          "TestUser",
+var DemoUser = service.UserMessage{
+	Id:            1,
+	Name:          "aaaa",
 	FollowCount:   0,
 	FollowerCount: 0,
 	IsFollow:      false,
