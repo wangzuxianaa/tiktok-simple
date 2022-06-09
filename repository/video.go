@@ -17,6 +17,7 @@ type Video struct {
 	IsFavourite    bool
 	Title          string
 	Author         User
+	PublishTime    string
 }
 
 //
@@ -61,7 +62,17 @@ func (v *Video) UpdateVideoCommentCount(flag string) error {
 //
 func (v *Video) FindVideosByUserId() ([]*Video, error) {
 	var videos []*Video
-	tx := db.Debug().Where("user_id = ?", v.UserId).Order("create_date desc").Find(&videos)
+	tx := db.Debug().Where("user_id = ?", v.UserId).Order("publish_time desc").Find(&videos)
+	err := tx.Error
+	if err != nil {
+		return nil, err
+	}
+	return videos, nil
+}
+
+func (v *Video) PullVideosFromServer() ([]*Video, error) {
+	var videos []*Video
+	tx := db.Debug().Order("publish_time desc").Limit(30).Find(&videos)
 	err := tx.Error
 	if err != nil {
 		return nil, err
