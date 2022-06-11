@@ -9,7 +9,7 @@ import (
 )
 
 //
-// FeedVideoList
+// PullVideosFromServer
 // @Description: 拉取视频流，userIdFromToken
 // @param userIdFromToken
 // @param latestTime
@@ -17,7 +17,7 @@ import (
 // @return *[]VideoMessage
 // @return error
 //
-func FeedVideoList(userIdFromToken int64, latestTime time.Time) (int64, *[]VideoMessage, error) {
+func PullVideosFromServer(userIdFromToken int64, latestTime time.Time) (int64, *[]VideoMessage, error) {
 	var nextTime int64
 	if latestTime.IsZero() {
 		latestTime = time.Now()

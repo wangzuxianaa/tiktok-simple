@@ -36,7 +36,7 @@ func Feed(c *gin.Context) {
 	latestTime = time.Unix(0, timeInt*1e6)
 	// 未登录状态
 	if ok == false {
-		nextTimeInt, videosList, err := service.FeedVideoList(0, latestTime)
+		nextTimeInt, videosList, err := service.PullVideosFromServer(0, latestTime)
 		if err != nil {
 			c.JSON(http.StatusOK, FeedResponse{
 				Response: service.Response{
@@ -56,7 +56,7 @@ func Feed(c *gin.Context) {
 		})
 	} else { // 登陆状态
 		claims, _ := token.ParseToken(tokenStr)
-		nextTimeInt, videosList, err := service.FeedVideoList(claims.UserId, latestTime)
+		nextTimeInt, videosList, err := service.PullVideosFromServer(claims.UserId, latestTime)
 		if err != nil {
 			c.JSON(http.StatusOK, FeedResponse{
 				Response: service.Response{
