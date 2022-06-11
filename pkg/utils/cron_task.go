@@ -2,9 +2,9 @@ package utils
 
 import (
 	"errors"
-	"github.com/RaymondCode/simple-demo/cache"
-	"github.com/RaymondCode/simple-demo/model"
 	"github.com/robfig/cron/v3"
+	"github.com/wangzuxianaa/tiktok-simple/cache"
+	"github.com/wangzuxianaa/tiktok-simple/model"
 	"log"
 	"strconv"
 	"strings"
@@ -17,7 +17,7 @@ import (
 func ExecuteCron() {
 	c := cron.New()
 	var err error
-	_, err = c.AddFunc("@every 1m", func() {
+	_, err = c.AddFunc("@every 1h", func() {
 		err = ScanAndUpdateCountToDB("comment_count")
 		if err != nil {
 			log.Print(err)
@@ -27,7 +27,7 @@ func ExecuteCron() {
 		log.Print(err)
 	}
 
-	_, err = c.AddFunc("@every 1m", func() {
+	_, err = c.AddFunc("@every 1h", func() {
 		err = ScanAndUpdateCountToDB("favourite_count")
 		if err != nil {
 			log.Print(err)

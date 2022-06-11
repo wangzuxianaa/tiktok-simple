@@ -2,9 +2,9 @@ package service
 
 import (
 	"errors"
-	"github.com/RaymondCode/simple-demo/model"
-	"github.com/RaymondCode/simple-demo/pkg/token"
-	"github.com/RaymondCode/simple-demo/pkg/utils"
+	"github.com/wangzuxianaa/tiktok-simple/model"
+	"github.com/wangzuxianaa/tiktok-simple/pkg/token"
+	"github.com/wangzuxianaa/tiktok-simple/pkg/utils"
 )
 
 //
@@ -20,11 +20,11 @@ func Register(username, password string) (int64, string, error) {
 	// 根据username来查询用户信息
 	_, ok, err := model.NewUserDaoInstance().FindUserByName(username)
 	if err != nil {
-		return -1, "", err
+		return UserIdNotFound, NoGenerateToken, err
 	}
 	// 查询到用户
 	if ok == true {
-		return -1, "", errors.New("user already exists")
+		return UserIdNotFound, NoGenerateToken, errors.New("user already exists")
 	}
 
 	// 加密
@@ -41,7 +41,7 @@ func Register(username, password string) (int64, string, error) {
 	// 生成token
 	generateToken, err := token.GenerateToken(user.Id, user.Username)
 	if err != nil {
-		return -1, "", errors.New("generating token fails")
+		return user.Id, NoGenerateToken, errors.New("generating token fails")
 	}
 	return user.Id, generateToken, nil
 }
@@ -58,22 +58,22 @@ func Register(username, password string) (int64, string, error) {
 func Login(username, password string) (int64, string, error) {
 	user, ok, err := model.NewUserDaoInstance().FindUserByName(username)
 	if err != nil {
-		return -1, "", err
+		return UserIdNotFound, NoGenerateToken, err
 	}
 	// 没有找到用户
 	if ok == false {
-		return -1, "", errors.New("user does not exist")
+		return UserIdNotFound, NoGenerateToken, errors.New("user does not exist")
 	}
 
 	// 密码不正确
 	if user.Password != utils.MakeSha1(password) {
-		return -1, "", errors.New("password is not correct")
+		return user.Id, NoGenerateToken, errors.New("password is not correct")
 	}
 
 	// 生成token
 	generateToken, err := token.GenerateToken(user.Id, username)
 	if err != nil {
-		return -1, "", errors.New("generating token fails")
+		return user.Id, NoGenerateToken, errors.New("generating token fails")
 	}
 	return user.Id, generateToken, err
 }
@@ -85,18 +85,22 @@ func Login(username, password string) (int64, string, error) {
 // @return *UserMessage
 // @return error
 //
-func GetUserInfo(Id int64) (*UserMessage, error) {
+func GetUserInfo(userId int64, userIdFromToken int64) (*UserMessage, error) {
 	// 根据用户id查找用户
-	user, err := model.NewUserDaoInstance().FindUserById(Id)
+	user, err := model.NewUserDaoInstance().FindUserById(userId)
+	if err != nil {
+		return nil, err
+	}
+	isFollow, err := model.NewFollowDaoInstance().FindFollow(userId, userIdFromToken)
 	if err != nil {
 		return nil, err
 	}
 	var userMessage = UserMessage{
-		Id:            Id,
+		Id:            userId,
 		Name:          user.Username,
 		FollowCount:   user.FollowCount,
 		FollowerCount: user.FollowerCount,
-		IsFollow:      user.IsFollow,
+		IsFollow:      isFollow,
 	}
 	return &userMessage, err
 }

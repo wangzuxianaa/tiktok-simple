@@ -12,11 +12,10 @@ import (
 //
 type User struct {
 	Id            int64  `gorm:"primarykey"`
-	Username      string `gorm:"not null;size:32;index:idx_name_pwd"`
-	Password      string `gorm:"not null;size:64;index:idx_name_pwd"`
+	Username      string `gorm:"not null;size:32;index:idx_name_pwd,priority:1"`
+	Password      string `gorm:"not null;size:64;index:idx_name_pwd,priority:2"`
 	FollowCount   uint
 	FollowerCount uint
-	IsFollow      bool
 	VideoList     []Video
 }
 

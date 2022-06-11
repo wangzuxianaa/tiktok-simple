@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/RaymondCode/simple-demo/conf"
-	"github.com/RaymondCode/simple-demo/model"
-	"github.com/RaymondCode/simple-demo/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/wangzuxianaa/tiktok-simple/conf"
+	"github.com/wangzuxianaa/tiktok-simple/model"
+	"github.com/wangzuxianaa/tiktok-simple/pkg/utils"
 	"log"
 	"os"
 )
@@ -38,5 +38,8 @@ func main() {
 
 	initRouter(r)
 
-	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	err := r.Run()
+	if err != nil {
+		os.Exit(-1)
+	} // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

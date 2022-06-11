@@ -3,11 +3,12 @@ package model
 import (
 	"context"
 	"fmt"
-	"github.com/RaymondCode/simple-demo/conf"
 	"github.com/go-redis/redis/v8"
+	"github.com/wangzuxianaa/tiktok-simple/conf"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
+	"time"
 )
 
 var DB *gorm.DB
@@ -34,11 +35,18 @@ func MysqlInit() (err error) {
 		return err
 	}
 	// 建立评论表，视频表，用户表和喜好表
-	err = DB.AutoMigrate(&Comment{}, &Video{}, &User{}, &Favourite{})
+	err = DB.AutoMigrate(&Comment{}, &Video{}, &User{}, &Follow{})
 	if err != nil {
 		log.Print(err)
 		return err
 	}
+	sqlDB, err := DB.DB()
+	if err != nil {
+		panic(err)
+	}
+	sqlDB.SetConnMaxIdleTime(time.Minute * 4)
+	sqlDB.SetMaxOpenConns(conf.Conf.MysqlConfig.MaxOpenConn)
+	sqlDB.SetMaxIdleConns(conf.Conf.MysqlConfig.MaxIdleConn)
 	return nil
 }
 

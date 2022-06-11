@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"github.com/RaymondCode/simple-demo/cache"
-	"github.com/RaymondCode/simple-demo/pkg/token"
-	"github.com/RaymondCode/simple-demo/service"
 	"github.com/gin-gonic/gin"
+	"github.com/wangzuxianaa/tiktok-simple/cache"
+	"github.com/wangzuxianaa/tiktok-simple/pkg/token"
+	"github.com/wangzuxianaa/tiktok-simple/service"
 	"net/http"
 	"strconv"
 )
@@ -23,39 +23,22 @@ func FavouriteAction(c *gin.Context) {
 
 	// 点赞操作
 	if actionType == "1" {
-		// 点赞数据存入redis
-		if err := cache.LikeAction(claims.UserId, videoId, actionType); err != nil {
+		// 点赞数据存入redis并更新总数
+		if _, err := cache.LikeActionAndUpdateCount(claims.UserId, videoId, actionType); err != nil {
 			c.JSON(http.StatusOK, VideoListResponse{
 				Response: service.Response{StatusCode: 1, StatusMsg: err.Error()},
 			})
-			return
 		}
-		// 更新redis中的点赞总数
-		_, err = cache.UpdateCount(videoId, "favourite_count", actionType)
-		if err != nil {
-			c.JSON(http.StatusOK, CommentActionResponse{
-				Response: service.Response{StatusCode: 1, StatusMsg: err.Error()},
-			})
-			return
-		}
+
 		c.JSON(http.StatusOK, VideoListResponse{
 			Response: service.Response{StatusCode: 0, StatusMsg: "success"},
 		})
 	} else if actionType == "2" {
-		// 删除点赞数据
-		if err := cache.LikeAction(claims.UserId, videoId, actionType); err != nil {
+		// 删除点赞数据，并更新总数
+		if _, err := cache.LikeActionAndUpdateCount(claims.UserId, videoId, actionType); err != nil {
 			c.JSON(http.StatusOK, VideoListResponse{
 				Response: service.Response{StatusCode: 1, StatusMsg: err.Error()},
 			})
-			return
-		}
-		// 点赞总数减一
-		_, err = cache.UpdateCount(videoId, "favourite_count", actionType)
-		if err != nil {
-			c.JSON(http.StatusOK, CommentActionResponse{
-				Response: service.Response{StatusCode: 1, StatusMsg: err.Error()},
-			})
-			return
 		}
 		c.JSON(http.StatusOK, VideoListResponse{
 			Response: service.Response{StatusCode: 0, StatusMsg: "success"},
@@ -65,6 +48,7 @@ func FavouriteAction(c *gin.Context) {
 }
 
 func FavouriteList(c *gin.Context) {
+	claims := c.MustGet("claims").(*token.Claims)
 	userIdStr := c.Query("user_id")
 	var userId int64
 	var err error
@@ -78,7 +62,7 @@ func FavouriteList(c *gin.Context) {
 
 	var favouriteList *[]service.VideoMessage
 	// 根据用户id获取点赞列表
-	favouriteList, err = service.GetFavouriteList(userId)
+	favouriteList, err = service.GetFavouriteList(userId, claims.UserId)
 	if err != nil {
 		c.JSON(http.StatusOK, VideoListResponse{
 			Response: service.Response{StatusCode: 1, StatusMsg: err.Error()},

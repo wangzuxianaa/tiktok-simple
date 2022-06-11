@@ -2,6 +2,14 @@ package service
 
 import "golang.org/x/net/context"
 
+const (
+	MaxVideoNum     = 30
+	UserIdNotFound  = -1
+	NoGenerateToken = ""
+	Add             = "1"
+	Sub             = "2"
+)
+
 var ctx = context.Background()
 
 type Response struct {

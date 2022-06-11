@@ -5,6 +5,8 @@ mysqlConfig:
   host: 127.0.0.1
   port: 3306
   name: tiktok_simple
+  maxOpenConn: 40
+  maxIdleConn: 25
 # redis数据库的配置
 redisConfig:
   addr: 127.0.0.1:6379

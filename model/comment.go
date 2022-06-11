@@ -1,7 +1,6 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"log"
 	"sync"
 )
@@ -14,11 +13,10 @@ import (
 type Comment struct {
 	Id         int64 `gorm:"primarykey"`
 	Content    string
-	CreateDate string
-	VideoId    int64
+	CreateDate string `gorm:"index:idx_vid_date,priority:2"`
+	VideoId    int64  `gorm:"index:idx_vid_date,priority:1"`
 	UserId     int64
 	User       User
-	Deleted    gorm.DeletedAt
 }
 
 type CommentDao struct {
@@ -37,7 +35,7 @@ func NewCommentDaoInstance() *CommentDao {
 
 //
 // CreateComment
-// @Description: 创建一条评论信息
+// @Description: 创建一条评论信息，并更新总数
 // @receiver *CommentDao
 // @param comment
 // @return error
@@ -75,7 +73,7 @@ func (*CommentDao) DeleteComment(commentId int64) error {
 // @return []*Comment
 // @return error
 //
-func (*CommentDao) FindCommentsByVideoId(videoId int64) ([]*Comment, error) {
+func (*CommentDao) FindCommentsByVideoId(videoId int64) (*[]*Comment, error) {
 	var comments []*Comment
 	tx := DB.Debug().Preload("User").Where("video_id = ?", videoId).Order("create_date desc").Find(&comments)
 	err := tx.Error
@@ -83,5 +81,5 @@ func (*CommentDao) FindCommentsByVideoId(videoId int64) ([]*Comment, error) {
 		log.Print(err)
 		return nil, err
 	}
-	return comments, nil
+	return &comments, nil
 }

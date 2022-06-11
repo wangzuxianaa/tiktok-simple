@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"sync"
+	"time"
 )
 
 //
@@ -11,16 +12,16 @@ import (
 // @Description: 视频数据表model，是one to many的关联模式，一条视频有许多评论信息。
 //
 type Video struct {
-	Id             int64 `gorm:"primarykey"`
-	UserId         int64
+	Id             int64 `gorm:"primarykey;index:idx_uid_vid,priority:2"`
+	UserId         int64 `gorm:"index:idx_uid_vid,priority:1"`
 	User           User
 	CommentList    []Comment
 	PlayName       string
 	CoverName      string
 	FavouriteCount uint
 	CommentCount   uint
-	IsFavourite    bool
 	Title          string
+	CreatedAt      time.Time
 }
 
 type VideoDao struct {
@@ -102,4 +103,14 @@ func (*VideoDao) FindVideoByVideoId(videoId int64) (*Video, error) {
 		return nil, err
 	}
 	return video, nil
+}
+
+func (*VideoDao) VideoListByLimitAndTime(latestTime time.Time, limit int) (*[]*Video, error) {
+	var videos []*Video
+	err := DB.Model(&Video{}).Preload("User").Where("created_at < ?", latestTime).
+		Order("created_at DESC").Limit(limit).Find(&videos).Error
+	if err != nil {
+		return nil, err
+	}
+	return &videos, nil
 }

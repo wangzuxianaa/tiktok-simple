@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"github.com/RaymondCode/simple-demo/pkg/token"
-	"github.com/RaymondCode/simple-demo/service"
 	"github.com/gin-gonic/gin"
+	"github.com/wangzuxianaa/tiktok-simple/pkg/token"
+	"github.com/wangzuxianaa/tiktok-simple/service"
 	"net/http"
 )
 

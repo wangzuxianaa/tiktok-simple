@@ -1,9 +1,10 @@
 package controller
 
 import (
-	"github.com/RaymondCode/simple-demo/pkg/token"
-	"github.com/RaymondCode/simple-demo/service"
 	"github.com/gin-gonic/gin"
+	"github.com/wangzuxianaa/tiktok-simple/model"
+	"github.com/wangzuxianaa/tiktok-simple/pkg/token"
+	"github.com/wangzuxianaa/tiktok-simple/service"
 	"net/http"
 	"strconv"
 )
@@ -61,16 +62,17 @@ func CommentAction(c *gin.Context) {
 			return
 		}
 
+		isFollow, _ := model.NewFollowDaoInstance().FindFollow(comment.UserId, claims.UserId)
 		c.JSON(http.StatusOK, CommentActionResponse{
 			Response: service.Response{StatusCode: 0, StatusMsg: "Success"},
 			Comment: service.CommentMessage{
 				Id: comment.Id,
 				User: service.UserMessage{
-					Id:            claims.UserId,
+					Id:            comment.UserId,
 					Name:          comment.User.Username,
 					FollowCount:   comment.User.FollowCount,
 					FollowerCount: comment.User.FollowerCount,
-					IsFollow:      comment.User.IsFollow,
+					IsFollow:      isFollow,
 				},
 				Content:    comment.Content,
 				CreateDate: comment.CreateDate,
@@ -107,6 +109,7 @@ func CommentAction(c *gin.Context) {
 //
 func CommentList(c *gin.Context) {
 	videoIdStr := c.Query("video_id")
+	claims := c.MustGet("claims").(*token.Claims)
 
 	var err error
 	var videoId int64
@@ -120,7 +123,7 @@ func CommentList(c *gin.Context) {
 
 	var commentList *[]service.CommentMessage
 	// 获取评论列表
-	commentList, err = service.GetCommentList(videoId)
+	commentList, err = service.GetCommentList(videoId, claims.UserId)
 	if err != nil {
 		c.JSON(http.StatusOK, CommentListResponse{
 			Response: service.Response{StatusCode: 1, StatusMsg: err.Error()},

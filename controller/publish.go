@@ -2,11 +2,11 @@ package controller
 
 import (
 	"fmt"
-	"github.com/RaymondCode/simple-demo/model"
-	"github.com/RaymondCode/simple-demo/pkg/token"
-	"github.com/RaymondCode/simple-demo/pkg/utils"
-	"github.com/RaymondCode/simple-demo/service"
 	"github.com/gin-gonic/gin"
+	"github.com/wangzuxianaa/tiktok-simple/model"
+	"github.com/wangzuxianaa/tiktok-simple/pkg/token"
+	"github.com/wangzuxianaa/tiktok-simple/pkg/utils"
+	"github.com/wangzuxianaa/tiktok-simple/service"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -89,6 +89,7 @@ func Publish(c *gin.Context) {
 //
 func PublishList(c *gin.Context) {
 	userIdStr := c.Query("user_id")
+	claims := c.MustGet("claims").(*token.Claims)
 	var userId int64
 	var err error
 	userId, err = strconv.ParseInt(userIdStr, 10, 64)
@@ -104,7 +105,7 @@ func PublishList(c *gin.Context) {
 
 	var videoList *[]service.VideoMessage
 	// 获取用户的视频发布列表
-	videoList, err = service.GetPublishList(userId)
+	videoList, err = service.GetPublishList(userId, claims.UserId)
 	if err != nil {
 		c.JSON(http.StatusOK, VideoListResponse{
 			Response: service.Response{

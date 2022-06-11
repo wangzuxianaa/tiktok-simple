@@ -7,11 +7,13 @@ import (
 
 type Configuration struct {
 	MysqlConfig struct {
-		User     string `yaml:"user"`
-		Password string `yaml:"password"`
-		Host     string `yaml:"host"`
-		Port     int    `yaml:"port"`
-		Name     string `yaml:"name"`
+		User        string `yaml:"user"`
+		Password    string `yaml:"password"`
+		Host        string `yaml:"host"`
+		Port        int    `yaml:"port"`
+		Name        string `yaml:"name"`
+		MaxOpenConn int    `yaml:"maxOpenConn"`
+		MaxIdleConn int    `yaml:"maxIdleConn"`
 	} `yaml:"mysqlConfig"`
 	RedisConfig struct {
 		Addr     string `yaml:"addr"`

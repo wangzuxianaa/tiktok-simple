@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"github.com/RaymondCode/simple-demo/service"
 	"github.com/gin-gonic/gin"
+	"github.com/wangzuxianaa/tiktok-simple/pkg/token"
+	"github.com/wangzuxianaa/tiktok-simple/service"
 	"net/http"
 	"strconv"
 )
@@ -87,7 +88,7 @@ func Login(c *gin.Context) {
 //
 func UserInfo(c *gin.Context) {
 	userIdStr := c.Query("user_id")
-
+	claims := c.MustGet("claims").(*token.Claims)
 	var err error
 	var userId int64
 	userId, err = strconv.ParseInt(userIdStr, 10, 64)
@@ -100,7 +101,7 @@ func UserInfo(c *gin.Context) {
 
 	var userRes *service.UserMessage
 	// 获取用户信息
-	userRes, err = service.GetUserInfo(userId)
+	userRes, err = service.GetUserInfo(userId, claims.UserId)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: service.Response{

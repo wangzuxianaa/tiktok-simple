@@ -1,4 +1,4 @@
-module github.com/RaymondCode/simple-demo
+module github.com/wangzuxianaa/tiktok-simple
 
 go 1.17
 
@@ -55,3 +55,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0 // indirect
 )
+
+replace github.com/RaymondCode/simple-demo => github.com/wangzuxianaa/tiktok-simple v0.0.0-20220601082304-68d88a7fa4f3

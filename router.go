@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/RaymondCode/simple-demo/controller"
-	"github.com/RaymondCode/simple-demo/pkg/middleware"
 	"github.com/gin-gonic/gin"
+	"github.com/wangzuxianaa/tiktok-simple/controller"
+	"github.com/wangzuxianaa/tiktok-simple/pkg/middleware"
 )
 
 func initRouter(r *gin.Engine) {
@@ -19,6 +19,7 @@ func initRouter(r *gin.Engine) {
 
 	apiRouter.Use(middleware.TokenChecker())
 	{
+
 		apiRouter.GET("/user/", controller.UserInfo)
 		apiRouter.GET("/publish/list/", controller.PublishList)
 		apiRouter.POST("/publish/action/", controller.Publish)

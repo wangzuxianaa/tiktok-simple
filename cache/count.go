@@ -3,7 +3,7 @@ package cache
 import (
 	"context"
 	"fmt"
-	"github.com/RaymondCode/simple-demo/model"
+	"github.com/wangzuxianaa/tiktok-simple/model"
 	"log"
 	"strconv"
 )
@@ -29,9 +29,9 @@ func UpdateCount(videoId int64, modelName string, actionType string) (int64, err
 	var err error
 	var Count int64
 
-	if actionType == "1" {
+	if actionType == Add {
 		Count, err = model.RDB.Incr(Ctx, redisKey).Result()
-	} else if actionType == "2" {
+	} else if actionType == Sub {
 		Count, err = model.RDB.Decr(Ctx, redisKey).Result()
 	}
 	return Count, err
