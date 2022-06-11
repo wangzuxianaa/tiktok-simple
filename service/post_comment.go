@@ -57,12 +57,24 @@ func PublishComment(videoId int64, userId int64, content string, actionType stri
 // @return error
 //
 func DeleteComment(videoId int64, commentId int64, actionType string) error {
-	if err := model.NewCommentDaoInstance().DeleteComment(commentId); err != nil {
-		return err
-	}
 
 	// 更新redis中的评论总数
 	if _, err := cache.UpdateCount(videoId, "comment_count", actionType); err != nil {
+		return err
+	}
+	if err := model.NewCommentDaoInstance().DeleteComment(commentId); err != nil {
+		// 回滚
+		countKey := cache.GetRedisKey(videoId, "comment_count")
+		var e1 error
+
+		if actionType == Add {
+			_, e1 = model.RDB.Decr(cache.Ctx, countKey).Result()
+		} else if actionType == Sub {
+			_, e1 = model.RDB.Incr(cache.Ctx, countKey).Result()
+		}
+		if e1 != nil {
+			log.Panic(e1)
+		}
 		return err
 	}
 	return nil
