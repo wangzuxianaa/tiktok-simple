@@ -55,8 +55,8 @@ func GetFavouriteList(userId int64, userIdFromToken int64) (*[]VideoMessage, err
 			},
 			PlayUrl:       strings.Join([]string{conf.Conf.VideoAddr, video.PlayName}, "/"),
 			CoverUrl:      strings.Join([]string{conf.Conf.CoverAddr, video.CoverName}, "/"),
-			FavoriteCount: uint(commentCount),
-			CommentCount:  uint(favoriteCount),
+			FavoriteCount: uint(favoriteCount),
+			CommentCount:  uint(commentCount),
 			IsFavorite:    isLiked,
 		}
 		favouriteList = append(favouriteList, favourite)
