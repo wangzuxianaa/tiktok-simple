@@ -1,25 +1,56 @@
-# simple-demo
+# tiktok-simple
 
-## 抖音项目服务端简单示例
+## 上手指南
 
-具体功能内容参考飞书说明文档
+### 配置要求
 
-工程无其他依赖，直接编译运行即可
+- [Go v1.17](https://go.dev/)
+- [Mysql v8.0.28](https://www.mysql.com/)
+- [redis v5.0.14](https://redis.io/)
+- [ffmpeg](https://ffmpeg.org/)
+
+### **运行步骤**
+
+项目已经部署到服务器上
+客户端连接ip地址：http://49.235.232.7:8989/
+
+## 文件说明
 
 ```shell
-go build && ./simple-demo
+filetree
+├─cache（缓存）
+│  ├─count.go（评论总数，点赞总数相关）
+│  └─favourite.go（点赞逻辑相关）
+├─conf
+│  ├─conf.go（viper配置）
+│  └─conf.yaml（配置文件）
+├─controller(视图层实现)
+├─model（mysql数据库模型）
+├─pkg（扩展包）
+│  ├─middleware(中间件)
+│    └─jwtAuth.go
+│  ├─token(token鉴权相关)
+│    └─jwt.go(jwt)
+│  └─utils(公共包)
+│    ├─cron_task.go(定时任务)
+│    ├─ffmpeg.go(截取视频为帧)
+│    └─makesha1.go(加密)
+├─public（本地存放视频）
+│  ├─cover(封面地址)
+│  └─video(视频地址)
+├─service（服务层实现）
+│  ├─comment_list.go(评论列表)
+│  ├─common.go(公共)
+│  ├─favourite_list.go(喜好列表)
+│  ├─feed_videoList.go(视频流)
+│  ├─follow_list.go(关注列表)
+│  ├─follower_list.go(粉丝列表)
+│  ├─post_comment.go(评论操作)
+│  ├─post_follow_service.go(关注操作)
+│  ├─publish_list.go(发布列表)
+│  └─user_service.go(用户登陆注册相关)
 ```
 
-### 功能说明
+## 具体说明
 
-接口功能不完善，仅作为示例
-
-* 用户登录数据保存在内存中，单次运行过程中有效
-* 视频上传后会保存到本地 public 目录中，访问时用 127.0.0.1:8080/static/video_name 即可
-
-### 测试数据
-
-测试数据写在 demo_data.go 中，用于列表接口的 mock 测试
-
-## 提交方式 
-自己新建分支如`dev-cyc`，修改完代码会`pull request`到`main`分支
+见文档链接：https://unv2ejlkso.feishu.cn/docx/doxcnWYBmkPRgbIqvuLpOp3UVMg
