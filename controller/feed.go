@@ -5,7 +5,6 @@ import (
 	"github.com/wangzuxianaa/tiktok-simple/pkg/token"
 	"github.com/wangzuxianaa/tiktok-simple/service"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -21,19 +20,7 @@ type FeedResponse struct {
 
 func Feed(c *gin.Context) {
 	tokenStr, ok := c.GetQuery("token")
-	rawTimestamp := c.Query("latest_time")
-	var latestTime time.Time
-	timeInt, err := strconv.ParseInt(rawTimestamp, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusOK, FeedResponse{
-			Response: service.Response{
-				StatusCode: 1,
-				StatusMsg:  err.Error(),
-			},
-		})
-		return
-	}
-	latestTime = time.Unix(0, timeInt*1e6)
+	var latestTime = time.Now()
 	// 未登录状态
 	if ok == false {
 		nextTimeInt, videosList, err := service.PullVideosFromServer(0, latestTime)

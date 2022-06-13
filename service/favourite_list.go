@@ -20,7 +20,7 @@ func GetFavouriteList(userId int64, userIdFromToken int64) (*[]VideoMessage, err
 	videosIdStr := cache.FindLikedVideoByUserId(userId)
 	var favouriteList []VideoMessage
 
-	for _, videoIdStr := range videosIdStr {
+	for videoIdStr := range reverse(videosIdStr) {
 		var videoId int64
 		var err error
 		videoId, err = strconv.ParseInt(videoIdStr, 10, 64)
@@ -62,4 +62,15 @@ func GetFavouriteList(userId int64, userIdFromToken int64) (*[]VideoMessage, err
 		favouriteList = append(favouriteList, favourite)
 	}
 	return &favouriteList, nil
+}
+
+func reverse(lst []string) chan string {
+	ret := make(chan string)
+	go func() {
+		for i := range lst {
+			ret <- lst[len(lst)-1-i]
+		}
+		close(ret)
+	}()
+	return ret
 }
