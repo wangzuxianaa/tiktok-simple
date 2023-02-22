@@ -50,7 +50,3 @@ filetree
 │  ├─publish_list.go(发布列表)
 │  └─user_service.go(用户登陆注册相关)
 ```
-
-## 具体说明
-
-见文档链接：https://unv2ejlkso.feishu.cn/docx/doxcnWYBmkPRgbIqvuLpOp3UVMg
